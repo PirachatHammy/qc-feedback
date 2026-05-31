@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แบบประเมินความพึงพอใจ — ระบบ QC Defect</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f4ff;--card:#ffffff;--card2:#f8faff;
+  --border:rgba(99,102,241,0.15);--border2:rgba(99,102,241,0.08);
+  --indigo:#6366f1;--cyan:#06b6d4;--violet:#8b5cf6;
+  --rose:#f43f5e;--amber:#f59e0b;--green:#10b981;
+  --text:#1e1b4b;--text2:#4c4f7a;--text3:#9194b8;
+  --radius:18px;--radius-sm:12px;
+  --shadow:0 4px 24px rgba(99,102,241,0.10),0 1px 4px rgba(99,102,241,0.06);
+  --shadow-hover:0 8px 40px rgba(99,102,241,0.18),0 2px 8px rgba(99,102,241,0.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 70% 50% at 10% 0%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 90% 100%,rgba(6,182,212,0.10) 0%,transparent 60%);pointer-events:none;}
+.blob{position:fixed;border-radius:50%;filter:blur(60px);opacity:.35;pointer-events:none;z-index:0;animation:blobFloat 8s ease-in-out infinite;}
+.blob1{width:320px;height:320px;background:radial-gradient(circle,#a5b4fc,#818cf8);top:-80px;left:-80px;}
+.blob2{width:260px;height:260px;background:radial-gradient(circle,#67e8f9,#22d3ee);bottom:-60px;right:-60px;animation-delay:-3s;}
+.blob3{width:200px;height:200px;background:radial-gradient(circle,#fde68a,#fbbf24);top:40%;right:5%;animation-delay:-5s;}
+@keyframes blobFloat{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(20px,-20px) scale(1.05);}66%{transform:translate(-10px,15px) scale(0.97);}}
+
+/* LIVE BADGE */
+.live-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.3);border-radius:999px;padding:5px 14px;}
+.live-dot-wrap{position:relative;width:12px;height:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.live-ring1{position:absolute;width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,0.22);animation:liveRing 1.6s ease-out infinite;}
+.live-ring2{position:absolute;width:32px;height:32px;border-radius:50%;background:rgba(239,68,68,0.08);animation:liveRing 1.6s ease-out infinite .35s;}
+.live-dot{width:12px;height:12px;border-radius:50%;background:#ef4444;display:block;animation:livePulse 1.4s ease-in-out infinite;}
+.live-text{font-size:12px;font-weight:700;color:#dc2626;letter-spacing:.12em;}
+.live-clock{font-family:'Chakra Petch',monospace;font-size:11px;color:rgba(255,255,255,0.6);}
+@keyframes liveRing{0%{transform:scale(.4);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.25)}}
+
+/* HEADER */
+.page-header{position:relative;z-index:10;padding:0 24px;background:linear-gradient(135deg,#4f46e5 0%,#6366f1 35%,#8b5cf6 65%,#06b6d4 100%);overflow:hidden;}
+.page-header::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:40px;background:var(--bg);clip-path:ellipse(55% 100% at 50% 100%);}
+.header-inner{max-width:680px;margin:0 auto;padding:36px 0 52px;position:relative;z-index:1;}
+.header-badge-group{display:flex;gap:8px;align-items:center;margin-bottom:20px;}
+.hbadge{font-family:'Chakra Petch',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.35);color:#fff;font-weight:600;}
+.hbadge.gold{background:rgba(251,191,36,0.3);border-color:rgba(251,191,36,0.5);color:#fde68a;}
+.header-eyebrow{font-family:'Chakra Petch',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.header-eyebrow::before{content:'';display:inline-block;width:28px;height:1.5px;background:rgba(255,255,255,0.5);}
+.page-header h1{font-size:clamp(22px,5vw,34px);font-weight:800;color:#fff;line-height:1.2;text-shadow:0 2px 20px rgba(0,0,0,0.15);}
+.header-sub{font-size:13px;color:rgba(255,255,255,0.72);margin-top:10px;display:flex;align-items:center;gap:6px;}
+.header-sub::before{content:'▸';color:rgba(255,255,255,0.5);font-size:10px;}
+
+/* CONTAINER */
+.container{max-width:680px;margin:0 auto;padding:16px 24px 80px;position:relative;z-index:10;}
+
+/* SECTION CARD */
+.section-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .25s,transform .25s;animation:cardIn .45s cubic-bezier(0.34,1.2,0.64,1) both;position:relative;}
+.section-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--cyan));opacity:0;transition:opacity .25s;}
+.section-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px);}
+.section-card:hover::before{opacity:1;}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px) scale(0.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.section-card:nth-child(1){animation-delay:.06s}
+.section-card:nth-child(2){animation-delay:.14s}
+.section-card:nth-child(3){animation-delay:.22s}
+.section-card:nth-child(4){animation-delay:.30s}
+.section-card:nth-child(5){animation-delay:.38s}
+
+.section-header{display:flex;align-items:center;gap:12px;padding:16px 22px 14px;border-bottom:1.5px solid var(--border2);background:linear-gradient(to right,var(--card2),var(--card));}
+.section-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:17px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.section-icon.indigo{background:linear-gradient(135deg,#e0e7ff,#c7d2fe);}
+.section-icon.green{background:linear-gradient(135deg,#d1fae5,#a7f3d0);}
+.section-icon.rose{background:linear-gradient(135deg,#ffe4e6,#fecdd3);}
+.section-icon.amber{background:linear-gradient(135deg,#fef3c7,#fde68a);}
+.section-icon.violet{background:linear-gradient(135deg,#ede9fe,#ddd6fe);}
+.section-header h2{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.01em;}
+.section-header .sub{font-family:'Chakra Petch',monospace;font-size:10px;color:var(--text3);margin-left:4px;text-transform:uppercase;letter-spacing:.08em;}
+.section-body{padding:22px;}
+
+/* FIELD */
+.field{margin-bottom:16px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-family:'Chakra Petch',monospace;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.req{color:var(--indigo);}
+.field input,.field select,.field textarea{width:100%;padding:11px 14px;background:#fafbff;border:1.5px solid #dde3f5;border-radius:var(--radius-sm);font-family:'Kanit',sans-serif;font-size:14.5px;color:var(--text);outline:none;transition:border-color .18s,box-shadow .18s,background .18s;-webkit-appearance:none;}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239194b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-color:#fafbff;padding-right:36px;cursor:pointer;}
+.field textarea{resize:vertical;min-height:90px;line-height:1.6;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(99,102,241,0.12);background:#fff;}
+
+/* STAR RATING */
+.star-group{display:flex;gap:8px;margin-top:4px;}
+.star-btn{width:52px;height:52px;border-radius:12px;border:2px solid #dde3f5;background:#fafbff;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s cubic-bezier(0.34,1.2,0.64,1);gap:2px;font-family:'Chakra Petch',monospace;}
+.star-btn .star-icon{font-size:20px;line-height:1;transition:transform .2s;}
+.star-btn .star-num{font-size:10px;font-weight:700;color:var(--text3);}
+.star-btn:hover{transform:translateY(-3px);border-color:var(--amber);background:#fffbeb;}
+.star-btn.active{border-color:var(--amber);background:linear-gradient(135deg,#fffbeb,#fef3c7);box-shadow:0 4px 16px rgba(245,158,11,0.25);transform:translateY(-2px);}
+.star-btn.active .star-icon{transform:scale(1.1);}
+.star-btn.active .star-num{color:var(--amber);}
+.star-label{font-family:'Chakra Petch',monospace;font-size:11px;color:var(--text3);margin-top:8px;min-height:18px;transition:all .2s;letter-spacing:.06em;}
+
+/* PRO / CON TAGS */
+.tag-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.tag-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:999px;border:1.5px solid #dde3f5;background:#fafbff;color:var(--text2);font-size:13px;cursor:pointer;transition:all .18s cubic-bezier(0.34,1.2,0.64,1);user-select:none;}
+.tag-chip:hover{transform:translateY(-1px);}
+.tag-chip.pro.active{background:linear-gradient(135deg,#d1fae5,#a7f3d0);border-color:#6ee7b7;color:#065f46;box-shadow:0 3px 12px rgba(16,185,129,0.2);}
+.tag-chip.con.active{background:linear-gradient(135deg,#ffe4e6,#fecdd3);border-color:#fca5a5;color:#9f1239;box-shadow:0 3px 12px rgba(244,63,94,0.2);}
+.tag-chip .chip-check{width:16px;height:16px;border-radius:50%;border:1.5px solid #dde3f5;display:grid;place-items:center;font-size:9px;transition:all .18s;background:#fff;}
+.tag-chip.pro.active .chip-check{background:#10b981;border-color:#10b981;color:#fff;}
+.tag-chip.con.active .chip-check{background:#f43f5e;border-color:#f43f5e;color:#fff;}
+
+/* CHAR COUNTER */
+.char-wrap{position:relative;}
+.char-count{position:absolute;bottom:10px;right:12px;font-family:'Chakra Petch',monospace;font-size:10px;color:var(--text3);pointer-events:none;}
+
+/* ROLE PILLS */
+.role-group{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.role-pill{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;border:2px solid #dde3f5;background:#fafbff;cursor:pointer;transition:all .2s cubic-bezier(0.34,1.2,0.64,1);}
+.role-pill:hover{transform:translateY(-1px);border-color:rgba(99,102,241,0.3);}
+.role-pill.active{background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-color:var(--indigo);box-shadow:0 4px 16px rgba(99,102,241,0.18);}
+.role-icon{font-size:22px;line-height:1;}
+.role-name{font-size:13px;font-weight:600;color:var(--text);}
+.role-sub{font-family:'Chakra Petch',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+
+/* ANONYMOUS TOGGLE */
+.anon-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(135deg,#f8faff,#f0f4ff);border:1.5px solid var(--border);border-radius:14px;cursor:pointer;margin-bottom:16px;}
+.anon-label{font-size:14px;font-weight:600;color:var(--text);}
+.anon-sub{font-family:'Chakra Petch',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.toggle-switch{width:44px;height:24px;border-radius:999px;background:#dde3f5;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle-switch.on{background:var(--indigo);}
+.toggle-knob{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .2s cubic-bezier(0.34,1.2,0.64,1);box-shadow:0 1px 4px rgba(0,0,0,0.15);}
+.toggle-switch.on .toggle-knob{transform:translateX(20px);}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:520px){.grid-2,.role-group{grid-template-columns:1fr;}}
+
+/* SUBMIT */
+.submit-btn{width:100%;padding:16px 20px;background:linear-gradient(135deg,#4f46e5 0%,#6366f1 40%,#8b5cf6 70%,#06b6d4 100%);background-size:200% 100%;color:#fff;font-family:'Kanit',sans-serif;font-size:16px;font-weight:700;border:none;border-radius:14px;cursor:pointer;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(99,102,241,0.35);transition:transform .2s,box-shadow .2s;}
+.submit-btn::before{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);transition:left .5s;}
+.submit-btn:hover::before{left:160%;}
+.submit-btn:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(99,102,241,0.45);}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,12,60,0.55);backdrop-filter:blur(12px);place-items:center;}
+.overlay.active{display:grid;}
+.overlay-box{background:linear-gradient(160deg,#fff 0%,#f0f4ff 60%,#fef9ee 100%);border-radius:28px;padding:48px 40px;text-align:center;width:min(90vw,400px);box-shadow:0 40px 100px rgba(99,102,241,0.25);position:relative;overflow:hidden;animation:popIn .4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes popIn{from{opacity:0;transform:scale(0.85);}to{opacity:1;transform:scale(1);}}
+.overlay-box::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#f43f5e,#f59e0b,#10b981,#06b6d4,#6366f1);background-size:300% 100%;animation:rainbowSlide 2s linear infinite;}
+@keyframes rainbowSlide{0%{background-position:300% 0}100%{background-position:-300% 0}}
+.spinner-wrap{position:relative;width:72px;height:72px;margin:0 auto 24px;}
+.spinner{width:72px;height:72px;border:4px solid #e0e7ff;border-top-color:#6366f1;border-right-color:#8b5cf6;border-radius:50%;animation:spin .7s linear infinite;}
+.spinner-inner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border:4px solid #fef3c7;border-bottom-color:#f59e0b;border-left-color:#10b981;border-radius:50%;animation:spin .45s linear infinite reverse;}
+.spinner-dot{position:absolute;top:50%;left:50%;width:10px;height:10px;background:linear-gradient(135deg,#f43f5e,#f59e0b);border-radius:50%;transform:translate(-50%,-50%);animation:pulse 1s ease-in-out infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.4);}}
+.overlay-box h3{font-size:20px;font-weight:800;margin-bottom:6px;color:#1e1b4b;}
+.overlay-box p{font-size:13px;color:#6366a0;margin-bottom:22px;}
+.progress-bar-bg{height:8px;border-radius:99px;background:#e0e7ff;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#f43f5e,#f59e0b,#10b981);background-size:300% 100%;animation:rainbowSlide 1.5s linear infinite;transition:width .4s;}
+.progress-pct{font-family:'Chakra Petch',monospace;font-size:14px;font-weight:700;margin-top:10px;background:linear-gradient(90deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* TOAST */
+.toast{display:none;position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:9998;min-width:280px;max-width:90vw;padding:15px 24px;border-radius:18px;font-size:14px;font-weight:700;align-items:center;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.toast.show{display:flex;}
+.toast.success{background:linear-gradient(135deg,#059669,#10b981);color:#fff;}
+.toast.error{background:linear-gradient(135deg,#dc2626,#f43f5e);color:#fff;}
+
+/* SUCCESS STATE */
+.success-card{display:none;text-align:center;padding:40px 24px;}
+.success-card.show{display:block;}
+.success-icon{font-size:64px;animation:bounceIn .5s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes bounceIn{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-size:22px;font-weight:800;color:var(--text);margin:16px 0 8px;}
+.success-sub{font-size:14px;color:var(--text3);}
+.success-again{margin-top:20px;padding:10px 24px;border-radius:12px;border:2px solid var(--indigo);background:transparent;color:var(--indigo);font-family:'Kanit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.success-again:hover{background:var(--indigo);color:#fff;}
+</style>
+</head>
+<body>
+
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="spinner-wrap"><div class="spinner"></div><div class="spinner-inner"></div><div class="spinner-dot"></div></div>
+    <h3>กำลังส่งข้อมูล...</h3>
+    <p id="overlayStatus">กรุณารอสักครู่</p>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="header-inner">
+    <div class="header-badge-group">
+      <span class="hbadge">QC System</span>
+      <span class="hbadge gold">Feedback</span>
+    </div>
+    <div class="header-eyebrow">Quality Control · User Satisfaction Survey</div>
+    <h1>แบบประเมินความพึงพอใจ<br>ระบบ QC Defect</h1>
+    <p class="header-sub">ความคิดเห็นของคุณจะช่วยพัฒนาระบบให้ดียิ่งขึ้น</p>
+    <div style="margin-top:14px">
+      <div class="live-badge">
+        <div class="live-dot-wrap">
+          <span class="live-ring1"></span><span class="live-ring2"></span>
+          <span class="live-dot"></span>
+        </div>
+        <span class="live-text">LIVE</span>
+        <span class="live-clock" id="formClock">00:00:00</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <form id="feedbackForm" novalidate>
+
+    <!-- S1: บทบาท -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon indigo">👤</div>
+        <h2>ตำแหน่ง <span class="sub">Your Role</span></h2>
+      </div>
+      <div class="section-body">
+        <!-- Anonymous toggle -->
+        <div class="anon-row" id="anonRow" onclick="toggleAnon()">
+          <div>
+            <div class="anon-label">ไม่ระบุชื่อ</div>
+            <div class="anon-sub">Anonymous · ข้อมูลส่วนตัวจะไม่ถูกบันทึก</div>
+          </div>
+          <div class="toggle-switch" id="anonSwitch">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+
+        <div id="nameField" class="field">
+          <label>ชื่อ-สกุล (ถ้าต้องการระบุ)</label>
+          <input type="text" name="name" placeholder="ชื่อของคุณ" id="nameInput">
+        </div>
+
+        <div class="field">
+          <label>บทบาทในทีม <span class="req">*</span></label>
+          <div class="role-group" id="roleGroup">
+            <div class="role-pill" onclick="pickRole(this,'QC / ลูกกะ')">
+              <span class="role-icon">🔍</span>
+              <div><div class="role-name">QC / ลูกกะ</div><div class="role-sub">Quality Control</div></div>
+            </div>
+            <div class="role-pill" onclick="pickRole(this,'หัวหน้างาน / S.V.')">
+              <span class="role-icon">👔</span>
+              <div><div class="role-name">หัวหน้างาน</div><div class="role-sub">Supervisor / S.V.</div></div>
+            </div>
+            <div class="role-pill" onclick="pickRole(this,'Robot / WD')">
+              <span class="role-icon">🤖</span>
+              <div><div class="role-name">Robot / WD</div><div class="role-sub">Warehouse / Driver</div></div>
+            </div>
+            <div class="role-pill" onclick="pickRole(this,'ผู้จัดการ / Mgr.')">
+              <span class="role-icon">🏢</span>
+              <div><div class="role-name">ผู้จัดการ</div><div class="role-sub">Manager / Mgr.</div></div>
+            </div>
+          </div>
+          <input type="hidden" name="role" id="roleInput" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- S2: คะแนนความพึงพอใจ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon amber">⭐</div>
+        <h2>คะแนนความพึงพอใจ <span class="sub">Satisfaction Score</span></h2>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>โดยรวมคุณพึงพอใจระบบนี้แค่ไหน? <span class="req">*</span></label>
+          <div class="star-group" id="starGroup">
+            <div class="star-btn" onclick="pickStar(1)" data-val="1"><span class="star-icon">😞</span><span class="star-num">1</span></div>
+            <div class="star-btn" onclick="pickStar(2)" data-val="2"><span class="star-icon">😕</span><span class="star-num">2</span></div>
+            <div class="star-btn" onclick="pickStar(3)" data-val="3"><span class="star-icon">😐</span><span class="star-num">3</span></div>
+            <div class="star-btn" onclick="pickStar(4)" data-val="4"><span class="star-icon">😊</span><span class="star-num">4</span></div>
+            <div class="star-btn" onclick="pickStar(5)" data-val="5"><span class="star-icon">🤩</span><span class="star-num">5</span></div>
+          </div>
+          <div class="star-label" id="starLabel">— กดเลือกคะแนน —</div>
+          <input type="hidden" name="score" id="scoreInput" required>
+        </div>
+
+        <div class="grid-2" style="margin-top:16px">
+          <div class="field">
+            <label>ใช้งานง่ายแค่ไหน?</label>
+            <select name="easeOfUse">
+              <option value="">— เลือก —</option>
+              <option value="ง่ายมาก">ง่ายมาก 😍</option>
+              <option value="ง่าย">ง่าย 👍</option>
+              <option value="พอใช้ได้">พอใช้ได้ 😐</option>
+              <option value="ยาก">ยาก 😕</option>
+              <option value="ยากมาก">ยากมาก 😣</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>ความเร็วของระบบ</label>
+            <select name="speed">
+              <option value="">— เลือก —</option>
+              <option value="เร็วมาก">เร็วมาก ⚡</option>
+              <option value="เร็ว">เร็ว 🚀</option>
+              <option value="ปกติ">ปกติ 🕐</option>
+              <option value="ช้า">ช้า 🐢</option>
+              <option value="ช้ามาก">ช้ามาก 🦥</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3: ข้อดี -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon green">✅</div>
+        <h2>ข้อดีของระบบ <span class="sub">Strengths</span></h2>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>เลือกสิ่งที่คุณชอบ (เลือกได้หลายข้อ)</label>
+          <div class="tag-group" id="proTags">
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>ใช้งานง่าย</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>ลดการใช้กระดาษ</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>แจ้งเตือนรวดเร็ว</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>ข้อมูล Real-Time</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>Dashboard เข้าใจง่าย</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>ประหยัดเวลา</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>เพิ่มความแม่นยำ</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>ติดตามได้ทุกที่</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>ข้อดีอื่นๆ ที่ต้องการเพิ่มเติม</label>
+          <div class="char-wrap">
+            <textarea name="prosText" id="prosText" placeholder="เขียนข้อดีของระบบที่คุณรู้สึก..." maxlength="500" oninput="updateCount(this,'prosCount')"></textarea>
+            <span class="char-count" id="prosCount">0/500</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S4: ข้อเสีย -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon rose">⚠️</div>
+        <h2>ข้อเสีย / ปัญหาที่พบ <span class="sub">Issues Found</span></h2>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>เลือกปัญหาที่พบ (เลือกได้หลายข้อ)</label>
+          <div class="tag-group" id="conTags">
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>โหลดช้า</div>
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>UI ซับซ้อน</div>
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>กรอกยากบนมือถือ</div>
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>แจ้งเตือน LINE ล่าช้า</div>
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>ข้อมูลหาย / ส่งไม่สำเร็จ</div>
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>Dashboard อ่านยาก</div>
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>ไม่มีการแจ้งเตือน</div>
+            <div class="tag-chip con" onclick="toggleTag(this)"><span class="chip-check"></span>รูปภาพอัปโหลดไม่ได้</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>ปัญหาอื่นๆ หรือรายละเอียดเพิ่มเติม</label>
+          <div class="char-wrap">
+            <textarea name="consText" id="consText" placeholder="อธิบายปัญหาที่พบ..." maxlength="500" oninput="updateCount(this,'consCount')"></textarea>
+            <span class="char-count" id="consCount">0/500</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S5: ข้อเสนอแนะ -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon violet">💡</div>
+        <h2>ข้อเสนอแนะ <span class="sub">Suggestions</span></h2>
+      </div>
+      <div class="section-body">
+        <div class="field">
+          <label>อยากให้เพิ่มฟีเจอร์อะไร?</label>
+          <div class="tag-group">
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>Export PDF/Excel</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>แจ้งเตือนอีเมล</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>Dark Mode</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>ค้นหาข้อมูลย้อนหลัง</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>กราฟเพิ่มเติม</div>
+            <div class="tag-chip pro" onclick="toggleTag(this)"><span class="chip-check"></span>App มือถือ</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>ข้อเสนอแนะ / ความคิดเห็นเพิ่มเติม</label>
+          <div class="char-wrap">
+            <textarea name="suggestion" id="suggestionText" placeholder="อยากให้ระบบดีขึ้นอย่างไร บอกได้เลยครับ..." maxlength="800" oninput="updateCount(this,'suggCount')"></textarea>
+            <span class="char-count" id="suggCount">0/800</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>จะแนะนำระบบนี้ให้คนอื่นไหม?</label>
+          <select name="recommend">
+            <option value="">— เลือก —</option>
+            <option value="แนะนำแน่นอน">แนะนำแน่นอน 🙌</option>
+            <option value="น่าจะแนะนำ">น่าจะแนะนำ 👍</option>
+            <option value="ไม่แน่ใจ">ไม่แน่ใจ 🤔</option>
+            <option value="คงไม่แนะนำ">คงไม่แนะนำ 🤷</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- S6: ข้อความถึงนักศึกษาฝึกงาน -->
+  <div class="section-card" style="animation-delay:.44s">
+    <div class="section-header">
+      <div class="section-icon" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8)">💌</div>
+      <h2>ข้อความถึงนักศึกษาฝึกงาน <span class="sub">Message to Intern</span></h2>
+    </div>
+    <div class="section-body">
+      <div class="field">
+        <label>มีอะไรอยากจะบอกนักศึกษาฝึกงานไหมครับ?</label>
+        <div class="char-wrap">
+          <textarea name="messageToIntern" id="messageToIntern"
+            placeholder="เช่น ขอบคุณที่ทำระบบดีๆ ให้ทีม, ทำงานเก่งมากเลย, โชคดีในอนาคตนะ... ✨"
+            maxlength="400" rows="4"
+            oninput="updateCount(this,'internMsgCount')"></textarea>
+          <span class="char-count" id="internMsgCount">0/400</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THANK YOU CARD -->
+  <div class="section-card" style="animation-delay:.46s">
+    <div style="padding:24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <div style="font-size:44px;line-height:1;flex-shrink:0">🙏</div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">ขอบคุณที่ใช้ระบบนี้</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">
+          ระบบนี้สร้างขึ้นเพื่อทุกคนในทีมโดยเฉพาะ<br>
+          ทุก Feedback ของคุณมีคุณค่ามากครับ 💙
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'Chakra Petch',monospace;font-size:10px;padding:3px 10px;border-radius:999px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:var(--indigo)">QC System · Ajinomoto</span>
+          <span style="font-family:'Chakra Petch',monospace;font-size:10px;padding:3px 10px;border-radius:999px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:var(--green)">PD-3 · Internship Project</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" onclick="submitForm()">
+    <span>📤</span> ส่งความคิดเห็น
+  </button>
+
+  <!-- Success -->
+  <div class="section-card" id="successCard" style="display:none">
+    <div class="success-card show">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">ขอบคุณสำหรับ Feedback!</div>
+      <div class="success-sub">ความคิดเห็นของคุณถูกบันทึกเรียบร้อยแล้ว<br>ทีมพัฒนาจะนำไปปรับปรุงระบบต่อไป</div>
+      <button class="success-again" onclick="resetForm()">📝 ส่งอีกครั้ง</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// 🔧 CONFIG — เปลี่ยน SCRIPT_URL เป็น Google Apps Script ของคุณ
+// ══════════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbws0XEuN6W_GpinIgFa5iB-1Bj8OeKjUN7gZQU8X6B5WZ4fhERFpS6HgNRIXudQOm26/exec';
+// ══════════════════════════════════════════════════
+
+const STAR_LABELS = {
+  1:'😞 ไม่พึงพอใจเลย',
+  2:'😕 ยังไม่ค่อยพึงพอใจ',
+  3:'😐 พอใช้ได้',
+  4:'😊 พึงพอใจดี',
+  5:'🤩 พึงพอใจมากที่สุด!'
+};
+
+let selectedRole = '';
+let selectedScore = 0;
+let isAnon = false;
+
+// ── Clock ──
+(function(){
+  function tick(){
+    const n=new Date();
+    const t=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');
+    const el=document.getElementById('formClock');if(el)el.textContent=t;
+  }
+  tick();setInterval(tick,1000);
+})();
+
+// ── Anonymous toggle ──
+function toggleAnon(){
+  isAnon=!isAnon;
+  document.getElementById('anonSwitch').classList.toggle('on',isAnon);
+  const nf=document.getElementById('nameField');
+  nf.style.opacity=isAnon?'0.4':'1';
+  nf.style.pointerEvents=isAnon?'none':'auto';
+  if(isAnon)document.getElementById('nameInput').value='';
+}
+
+// ── Role picker ──
+function pickRole(el,val){
+  document.querySelectorAll('.role-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  selectedRole=val;
+  document.getElementById('roleInput').value=val;
+}
+
+// ── Star rating ──
+function pickStar(n){
+  selectedScore=n;
+  document.getElementById('scoreInput').value=n;
+  document.querySelectorAll('.star-btn').forEach(btn=>{
+    btn.classList.toggle('active',parseInt(btn.dataset.val)<=n);
+  });
+  document.getElementById('starLabel').textContent=STAR_LABELS[n]||'';
+}
+
+// ── Tag chips ──
+function toggleTag(el){
+  el.classList.toggle('active');
+  const check=el.querySelector('.chip-check');
+  check.textContent=el.classList.contains('active')?'✓':'';
+}
+
+// ── Char counter ──
+function updateCount(ta,countId){
+  document.getElementById(countId).textContent=`${ta.value.length}/${ta.maxLength}`;
+}
+
+// ── Collect tags ──
+function collectTags(groupId){
+  return [...document.querySelectorAll(`#${groupId} .tag-chip.active`)].map(t=>t.textContent.replace('✓','').trim()).join(', ');
+}
+function collectAllFeatureTags(){
+  return [...document.querySelectorAll('.section-card:last-of-type .tag-chip.active')].map(t=>t.textContent.replace('✓','').trim()).join(', ');
+}
+function collectSuggTags(){
+  const cards=document.querySelectorAll('.section-card');
+  const lastCard=cards[cards.length-1];
+  return [...lastCard.querySelectorAll('.tag-chip.active')].map(t=>t.textContent.replace('✓','').trim()).join(', ');
+}
+
+// ── Progress ──
+let pInt;
+function startProgress(){
+  let v=0;const fill=document.getElementById('progressFill');const pct=document.getElementById('progressPct');
+  pInt=setInterval(()=>{v=Math.min(v+Math.random()*6,85);fill.style.width=v+'%';pct.textContent=Math.round(v)+'%';},220);
+}
+function finishProgress(ok){
+  clearInterval(pInt);
+  document.getElementById('progressFill').style.width='100%';
+  document.getElementById('progressPct').textContent='100%';
+  document.getElementById('overlayStatus').textContent=ok?'✅ เสร็จสิ้น!':'❌ เกิดข้อผิดพลาด';
+}
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';
+  setTimeout(()=>t.className='toast',4500);
+}
+
+// ── Submit ──
+async function submitForm(){
+  // Validate
+  if(!selectedRole){showToast('❌ กรุณาเลือกบทบาทของคุณ','error');return;}
+  if(!selectedScore){showToast('❌ กรุณาให้คะแนนความพึงพอใจ','error');return;}
+
+  const fd=new FormData(document.getElementById('feedbackForm'));
+  const payload={action:'feedback'};
+  fd.forEach((v,k)=>payload[k]=String(v).trim());
+
+  // Collect tags
+  payload.proTags=collectTags('proTags');
+  payload.conTags=collectTags('conTags');
+
+  // Collect feature suggestion tags (from last section card's tag-group)
+  const allTagGroups=document.querySelectorAll('.section-card:nth-child(5) .tag-group');
+  if(allTagGroups.length>0){
+    payload.featureSuggTags=[...allTagGroups[0].querySelectorAll('.tag-chip.active')].map(t=>t.textContent.replace('✓','').trim()).join(', ');
+  }
+
+  payload.messageToIntern=document.getElementById('messageToIntern').value.trim();
+  if(isAnon||!payload.name){payload.name='ไม่ระบุชื่อ';}
+  payload.timestamp=new Date().toLocaleString('th-TH');
+
+  document.getElementById('overlay').classList.add('active');
+  document.getElementById('overlayStatus').textContent='กำลังส่งข้อมูล...';
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('progressPct').textContent='0%';
+  document.getElementById('submitBtn').disabled=true;
+  startProgress();
+
+  try{
+    const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)});
+    const json=await res.json();
+    finishProgress(json.success!==false);
+    setTimeout(()=>{
+      document.getElementById('overlay').classList.remove('active');
+      document.getElementById('submitBtn').disabled=false;
+      if(json.success!==false){
+        document.getElementById('feedbackForm').style.display='none';
+        document.getElementById('submitBtn').style.display='none';
+        document.getElementById('successCard').style.display='block';
+        showToast('✅ ส่ง Feedback สำเร็จ!','success');
+      }else{
+        showToast('❌ '+(json.error||'เกิดข้อผิดพลาด'),'error');
+      }
+    },900);
+  }catch{
+    finishProgress(false);
+    setTimeout(()=>{
+      document.getElementById('overlay').classList.remove('active');
+      document.getElementById('submitBtn').disabled=false;
+      showToast('❌ เชื่อมต่อไม่ได้','error');
+    },900);
+  }
+}
+
+function resetForm(){
+  document.getElementById('feedbackForm').reset();
+  document.getElementById('feedbackForm').style.display='block';
+  document.getElementById('submitBtn').style.display='flex';
+  document.getElementById('successCard').style.display='none';
+  selectedRole='';selectedScore=0;isAnon=false;
+  document.querySelectorAll('.role-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.star-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('starLabel').textContent='— กดเลือกคะแนน —';
+  document.querySelectorAll('.tag-chip').forEach(t=>{t.classList.remove('active');const c=t.querySelector('.chip-check');if(c)c.textContent='';});
+  document.getElementById('anonSwitch').classList.remove('on');
+  document.getElementById('nameField').style.opacity='1';
+  document.getElementById('nameField').style.pointerEvents='auto';
+  ['prosCount','consCount','suggCount'].forEach(id=>document.getElementById(id).textContent='0/'+({'prosCount':500,'consCount':500,'suggCount':800}[id]));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

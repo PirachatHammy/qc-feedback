@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback Dashboard — ระบบ QC Defect</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4ff;--card:#fff;--card2:#f8faff;
+  --border:rgba(99,102,241,0.15);--border2:rgba(99,102,241,0.08);
+  --indigo:#6366f1;--cyan:#06b6d4;--violet:#8b5cf6;
+  --rose:#f43f5e;--amber:#f59e0b;--green:#10b981;
+  --text:#1e1b4b;--text2:#4c4f7a;--text3:#9194b8;
+  --r:18px;--rs:12px;
+  --shadow:0 4px 24px rgba(99,102,241,0.10),0 1px 4px rgba(99,102,241,0.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 70% 50% at 10% 0%,rgba(99,102,241,0.12) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 40% at 90% 100%,rgba(6,182,212,0.10) 0%,transparent 60%);
+  pointer-events:none;}
+.blob{position:fixed;border-radius:50%;filter:blur(60px);opacity:.32;pointer-events:none;z-index:0;animation:bf 8s ease-in-out infinite;}
+.b1{width:320px;height:320px;background:radial-gradient(circle,#a5b4fc,#818cf8);top:-80px;left:-80px;}
+.b2{width:260px;height:260px;background:radial-gradient(circle,#67e8f9,#22d3ee);bottom:-60px;right:-60px;animation-delay:-3s;}
+.b3{width:200px;height:200px;background:radial-gradient(circle,#fde68a,#fbbf24);top:40%;right:5%;animation-delay:-5s;}
+@keyframes bf{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(20px,-20px) scale(1.05);}66%{transform:translate(-10px,15px) scale(0.97);}}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(30,27,75,0.96);backdrop-filter:blur(12px);
+  padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,0.08);}
+.topbar-l{display:flex;align-items:center;gap:12px;}
+.topbar-logo{font-size:13px;font-weight:800;color:#fff;}
+.topbar-div{width:1px;height:18px;background:rgba(255,255,255,0.15);}
+.topbar-sub{font-size:10px;color:rgba(255,255,255,0.45);font-family:'Chakra Petch',monospace;letter-spacing:.08em;}
+.topbar-r{display:flex;align-items:center;gap:10px;}
+.refresh-btn{display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;
+  border:1px solid rgba(99,102,241,0.5);background:rgba(99,102,241,0.15);
+  color:#a5b4fc;font-family:'Kanit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.refresh-btn:hover{background:rgba(99,102,241,0.3);}
+.refresh-btn.spin .ri{animation:spin .7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.live-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(239,68,68,0.12);
+  border:1px solid rgba(239,68,68,0.35);border-radius:999px;padding:4px 12px;}
+.live-dot-wrap{position:relative;width:11px;height:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.live-ring1{position:absolute;width:20px;height:20px;border-radius:50%;background:rgba(239,68,68,0.22);animation:lR 1.6s ease-out infinite;}
+.live-ring2{position:absolute;width:28px;height:28px;border-radius:50%;background:rgba(239,68,68,0.08);animation:lR 1.6s ease-out infinite .35s;}
+.live-dot{width:11px;height:11px;border-radius:50%;background:#ef4444;display:block;animation:lP 1.4s ease-in-out infinite;}
+.live-text{font-size:11px;font-weight:700;color:#ef4444;letter-spacing:.12em;}
+.live-clock{font-family:'Chakra Petch',monospace;font-size:10px;color:rgba(255,255,255,0.45);}
+@keyframes lR{0%{transform:scale(.4);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+@keyframes lP{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.25)}}
+
+/* ── HERO HEADER ── */
+.hero{position:relative;z-index:10;padding:0 24px;
+  background:linear-gradient(135deg,#4f46e5 0%,#6366f1 35%,#8b5cf6 65%,#06b6d4 100%);overflow:hidden;}
+.hero::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:36px;background:var(--bg);clip-path:ellipse(55% 100% at 50% 100%);}
+.hero-inner{max-width:900px;margin:0 auto;padding:28px 0 46px;position:relative;z-index:1;}
+.hero-badges{display:flex;gap:8px;margin-bottom:14px;}
+.hb{font-family:'Chakra Petch',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+  padding:4px 12px;border-radius:999px;background:rgba(255,255,255,0.2);
+  border:1px solid rgba(255,255,255,0.35);color:#fff;font-weight:600;}
+.hb.gold{background:rgba(251,191,36,0.3);border-color:rgba(251,191,36,0.5);color:#fde68a;}
+.hero h1{font-size:clamp(20px,4vw,30px);font-weight:800;color:#fff;line-height:1.2;text-shadow:0 2px 20px rgba(0,0,0,0.15);}
+.hero-sub{font-size:12px;color:rgba(255,255,255,0.65);margin-top:8px;}
+
+/* ── MAIN ── */
+.main{max-width:900px;margin:0 auto;padding:20px 24px 80px;position:relative;z-index:10;}
+
+/* ── SCORE HERO CARD ── */
+.score-hero{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);
+  box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden;
+  animation:cIn .45s cubic-bezier(0.34,1.2,0.64,1) both;}
+@keyframes cIn{from{opacity:0;transform:translateY(20px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
+.score-hero::before{content:'';display:block;height:4px;
+  background:linear-gradient(90deg,#6366f1,#8b5cf6,#06b6d4);}
+.score-hero-body{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;gap:0;padding:0;}
+.score-segment{padding:28px 24px;text-align:center;}
+.score-divider{background:var(--border2);align-self:stretch;margin:16px 0;}
+.score-emoji{font-size:48px;line-height:1;display:block;margin-bottom:8px;animation:popIn .5s cubic-bezier(0.34,1.56,0.64,1) both;}
+@keyframes popIn{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+.score-big{font-size:52px;font-weight:800;line-height:1;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.score-unit{font-size:18px;font-weight:400;opacity:.6;}
+.score-label{font-family:'Chakra Petch',monospace;font-size:10px;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.1em;margin-top:6px;}
+.score-sub-val{font-size:28px;font-weight:800;line-height:1;color:var(--text);}
+.score-trend{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;font-weight:600;
+  padding:2px 10px;border-radius:999px;}
+.tr-g{background:rgba(16,185,129,0.10);color:var(--green);}
+.tr-a{background:rgba(245,158,11,0.10);color:var(--amber);}
+.tr-r{background:rgba(244,63,94,0.10);color:var(--rose);}
+.tr-b{background:rgba(99,102,241,0.10);color:var(--indigo);}
+@media(max-width:600px){.score-hero-body{grid-template-columns:1fr;}.score-divider{display:none;height:1px;width:100%;margin:0;}.score-segment{padding:20px;}}
+
+/* ── PANEL ── */
+.panel{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:20px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;animation:cIn .45s cubic-bezier(0.34,1.2,0.64,1) both;}
+.panel:hover{transform:translateY(-2px);box-shadow:0 8px 40px rgba(99,102,241,0.14);}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--indigo),var(--violet),var(--cyan));opacity:0;transition:opacity .25s;}
+.panel:hover::before{opacity:1;}
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;}
+.pt{font-size:14px;font-weight:700;color:var(--text);}
+.ps{font-size:11px;color:var(--text3);margin-top:2px;}
+.ptag{font-family:'Chakra Petch',monospace;font-size:9px;color:var(--text3);
+  padding:2px 7px;border:1px solid var(--border);border-radius:4px;}
+
+/* ── GRID LAYOUTS ── */
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:700px){.row2,.row3{grid-template-columns:1fr;}}
+
+/* ── BAR CHART (score dist) ── */
+.bar-dist-row{display:grid;grid-template-columns:40px 1fr 36px;align-items:center;gap:10px;margin-bottom:10px;}
+.bar-dist-lbl{font-size:18px;text-align:center;line-height:1;}
+.bar-dist-track{height:28px;background:#f0f4ff;border-radius:8px;overflow:hidden;position:relative;}
+.bar-dist-fill{height:100%;border-radius:8px;transition:width 1.4s cubic-bezier(.34,1.2,.64,1);
+  display:flex;align-items:center;padding-left:10px;}
+.bar-dist-pct{font-size:11px;font-weight:700;color:#fff;font-family:'Chakra Petch',monospace;
+  white-space:nowrap;text-shadow:0 1px 2px rgba(0,0,0,0.15);}
+.bar-dist-n{font-family:'Chakra Petch',monospace;font-size:12px;font-weight:600;color:var(--text3);text-align:right;}
+
+/* ── STAR VISUAL ── */
+.star-display{display:flex;gap:4px;justify-content:center;margin:8px 0;}
+.star-filled{color:#f59e0b;font-size:22px;}
+.star-half{position:relative;font-size:22px;display:inline-block;}
+.star-empty{color:#e2e8f0;font-size:22px;}
+
+/* ── TAG CLOUD ── */
+.tag-cloud{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+.tc{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:500;}
+.tc-green{background:rgba(16,185,129,0.10);border:1.5px solid rgba(16,185,129,0.25);color:#065f46;}
+.tc-rose{background:rgba(244,63,94,0.10);border:1.5px solid rgba(244,63,94,0.25);color:#9f1239;}
+.tc-violet{background:rgba(139,92,246,0.10);border:1.5px solid rgba(139,92,246,0.25);color:#5b21b6;}
+.tc-n{font-family:'Chakra Petch',monospace;font-size:10px;font-weight:700;
+  padding:1px 6px;border-radius:4px;background:rgba(0,0,0,0.06);}
+
+/* ── ROLE DONUT (simple) ── */
+.role-list{display:flex;flex-direction:column;gap:10px;}
+.role-row{display:grid;grid-template-columns:120px 1fr 28px;align-items:center;gap:8px;}
+.role-lbl{font-size:12px;color:var(--text2);}
+.role-track{height:10px;background:#f0f4ff;border-radius:99px;overflow:hidden;}
+.role-fill{height:100%;border-radius:99px;transition:width 1.2s cubic-bezier(.34,1.2,.64,1);}
+.role-n{font-family:'Chakra Petch',monospace;font-size:11px;color:var(--text3);text-align:right;}
+
+/* ── RECENT TABLE ── */
+.tbl-wrap{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);
+  overflow:hidden;box-shadow:var(--shadow);margin-bottom:16px;}
+.tbl-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border2);}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+th{font-family:'Chakra Petch',monospace;font-size:9px;color:var(--text3);font-weight:500;
+  padding:8px 12px;text-align:left;background:#f8faff;border-bottom:1px solid var(--border2);white-space:nowrap;}
+td{font-size:12px;color:var(--text2);padding:9px 12px;border-bottom:1px solid var(--border2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(99,102,241,0.03);}
+.pill{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.pill-5{background:rgba(16,185,129,0.12);color:#065f46;}
+.pill-4{background:rgba(6,182,212,0.12);color:#155e75;}
+.pill-3{background:rgba(245,158,11,0.12);color:#92400e;}
+.pill-2{background:rgba(244,63,94,0.12);color:#9f1239;}
+.pill-1{background:rgba(244,63,94,0.20);color:#7f1d1d;}
+
+/* ── LOADING / EMPTY ── */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:60px 24px;}
+.ls{width:48px;height:48px;border:3px solid rgba(99,102,241,0.15);border-top-color:var(--indigo);border-radius:50%;animation:spin .7s linear infinite;}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:13px;}
+
+/* ── GAUGE ── */
+.gauge-wrap{display:flex;justify-content:center;padding:10px 0 4px;}
+.gauge-svg{overflow:visible;}
+</style>
+</head>
+<body>
+
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-l">
+    <div class="topbar-logo">⚙ QC SYSTEM</div>
+    <div class="topbar-div"></div>
+    <div class="topbar-sub">Feedback Dashboard · Real-Time</div>
+  </div>
+  <div class="topbar-r">
+    <div class="live-badge">
+      <div class="live-dot-wrap"><span class="live-ring1"></span><span class="live-ring2"></span><span class="live-dot"></span></div>
+      <span class="live-text">LIVE</span>
+      <span class="live-clock" id="liveClock">00:00:00</span>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadData()">
+      <span class="ri">↻</span> Refresh
+    </button>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badges">
+      <span class="hb">QC System</span>
+      <span class="hb gold">Feedback Report</span>
+    </div>
+    <h1>📊 สรุปผลความพึงพอใจ<br>ระบบ QC Defect</h1>
+    <p class="hero-sub">ข้อมูล Real-Time จาก Google Sheets · อัปเดตอัตโนมัติ</p>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SCORE HERO -->
+  <div class="score-hero" id="scoreHero">
+    <div class="score-hero-body">
+      <div class="score-segment">
+        <span class="score-emoji" id="avgEmoji">—</span>
+        <div class="score-big" id="avgScore">—</div>
+        <div class="score-label">คะแนนเฉลี่ย / 5</div>
+        <div id="starRow" class="star-display" style="justify-content:center;font-size:20px;margin-top:6px">—</div>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-segment">
+        <div style="font-size:40px;margin-bottom:8px">📝</div>
+        <div class="score-sub-val" id="totalCount">—</div>
+        <div class="score-label">จำนวนผู้ตอบ</div>
+        <div class="score-trend tr-b" id="countTrend" style="margin-top:8px">—</div>
+      </div>
+      <div class="score-divider"></div>
+      <div class="score-segment">
+        <div style="font-size:40px;margin-bottom:8px">🏆</div>
+        <div class="score-sub-val" id="topScore" style="font-size:22px">—</div>
+        <div class="score-label">คะแนนที่ได้มากที่สุด</div>
+        <div class="score-trend tr-g" id="topScorePct" style="margin-top:8px">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: score distribution + gauge -->
+  <div class="row2">
+    <div class="panel" style="animation-delay:.08s">
+      <div class="ph">
+        <div><div class="pt">การกระจายคะแนน</div><div class="ps">จำนวนคนต่อระดับคะแนน</div></div>
+        <div class="ptag">DIST</div>
+      </div>
+      <div id="distContainer">
+        <div class="loading-wrap"><div class="ls"></div></div>
+      </div>
+    </div>
+
+    <div class="panel" style="animation-delay:.16s">
+      <div class="ph">
+        <div><div class="pt">Satisfaction Gauge</div><div class="ps">ภาพรวมความพึงพอใจ</div></div>
+        <div class="ptag">GAUGE</div>
+      </div>
+      <div class="gauge-wrap">
+        <svg class="gauge-svg" viewBox="0 0 200 120" width="200" height="120">
+          <!-- track -->
+          <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e0e7ff" stroke-width="18" stroke-linecap="round"/>
+          <!-- fill arc, updated by JS -->
+          <path id="gaugeFill" d="M 20 100 A 80 80 0 0 1 20 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="18" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f43f5e"/>
+              <stop offset="50%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#10b981"/>
+            </linearGradient>
+          </defs>
+          <!-- needle -->
+          <line id="gaugeNeedle" x1="100" y1="100" x2="100" y2="30" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="100" cy="100" r="6" fill="#6366f1"/>
+          <!-- labels -->
+          <text x="14" y="116" font-family="Chakra Petch" font-size="10" fill="#9194b8">1</text>
+          <text x="178" y="116" font-family="Chakra Petch" font-size="10" fill="#9194b8">5</text>
+          <text id="gaugeCenter" x="100" y="88" font-family="Kanit" font-size="22" font-weight="800" fill="#1e1b4b" text-anchor="middle">—</text>
+          <text x="100" y="108" font-family="Chakra Petch" font-size="9" fill="#9194b8" text-anchor="middle">AVG SCORE</text>
+        </svg>
+      </div>
+      <!-- ease / speed mini stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px" id="miniStats">
+        <div style="background:#f8faff;border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:18px;margin-bottom:4px">🖱️</div>
+          <div id="easeTop" style="font-size:13px;font-weight:700;color:var(--text)">—</div>
+          <div style="font-family:'Chakra Petch',monospace;font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.08em">ใช้งาน</div>
+        </div>
+        <div style="background:#f8faff;border-radius:12px;padding:12px;text-align:center">
+          <div style="font-size:18px;margin-bottom:4px">⚡</div>
+          <div id="speedTop" style="font-size:13px;font-weight:700;color:var(--text)">—</div>
+          <div style="font-family:'Chakra Petch',monospace;font-size:9px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.08em">ความเร็ว</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: pros / cons -->
+  <div class="row2">
+    <div class="panel" style="animation-delay:.22s">
+      <div class="ph">
+        <div><div class="pt">✅ ข้อดียอดนิยม</div><div class="ps">สิ่งที่คนชอบมากที่สุด</div></div>
+        <div class="ptag">PROS</div>
+      </div>
+      <div class="tag-cloud" id="prosCloud">
+        <div class="loading-wrap" style="padding:20px"><div class="ls"></div></div>
+      </div>
+    </div>
+    <div class="panel" style="animation-delay:.28s">
+      <div class="ph">
+        <div><div class="pt">⚠️ ปัญหาที่พบบ่อย</div><div class="ps">ปัญหาที่ถูกเลือกมากที่สุด</div></div>
+        <div class="ptag">CONS</div>
+      </div>
+      <div class="tag-cloud" id="consCloud">
+        <div class="loading-wrap" style="padding:20px"><div class="ls"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: role + feature suggestions -->
+  <div class="row2">
+    <div class="panel" style="animation-delay:.34s">
+      <div class="ph">
+        <div><div class="pt">👥 ผู้ตอบแยกตามบทบาท</div><div class="ps">สัดส่วนของแต่ละตำแหน่ง</div></div>
+        <div class="ptag">ROLE</div>
+      </div>
+      <div class="role-list" id="roleList">
+        <div class="loading-wrap" style="padding:20px"><div class="ls"></div></div>
+      </div>
+    </div>
+    <div class="panel" style="animation-delay:.40s">
+      <div class="ph">
+        <div><div class="pt">💡 ฟีเจอร์ที่อยากได้</div><div class="ps">ข้อเสนอแนะจากทีม</div></div>
+        <div class="ptag">WISH</div>
+      </div>
+      <div class="tag-cloud" id="featCloud">
+        <div class="loading-wrap" style="padding:20px"><div class="ls"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MESSAGE WALL -->
+  <div class="panel" style="animation-delay:.44s;margin-bottom:16px">
+    <div class="ph">
+      <div><div class="pt">💌 ข้อความถึงนักศึกษาฝึกงาน</div><div class="ps">จากทีม Ajinomoto · PD-3</div></div>
+      <div class="ptag">MSG</div>
+    </div>
+    <div id="msgWall" style="display:flex;flex-direction:column;gap:10px">
+      <div class="loading-wrap" style="padding:20px"><div class="ls"></div></div>
+    </div>
+  </div>
+
+  <!-- RECENT TABLE -->
+  <div class="tbl-wrap">
+    <div class="tbl-hd">
+      <div><div class="pt">รายการล่าสุด</div><div class="ps" id="tblSub">—</div></div>
+      <div class="ptag">RECENT 20</div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:120px">วันที่/เวลา</th>
+            <th style="width:100px">ชื่อ</th>
+            <th style="width:110px">บทบาท</th>
+            <th style="width:56px">คะแนน</th>
+            <th style="width:90px">ใช้งาน</th>
+            <th style="width:80px">ความเร็ว</th>
+            <th>ข้อดี (เลือก)</th>
+            <th>ปัญหา (เลือก)</th>
+            <th style="width:90px">แนะนำ?</th>
+          </tr>
+        </thead>
+        <tbody id="tblBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- THANK YOU BANNER -->
+  <div style="background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-top:4px;position:relative;">
+    <div style="height:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#06b6d4);"></div>
+    <div style="padding:22px 24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="font-size:42px;line-height:1;flex-shrink:0">🙏</div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px">ขอบคุณที่ใช้ระบบนี้</div>
+        <div style="font-size:12.5px;color:var(--ink2);line-height:1.7">ระบบนี้สร้างขึ้นเพื่อทุกคนในทีมโดยเฉพาะ · ทุก Feedback ของคุณมีคุณค่ามากครับ 💙</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-family:'Chakra Petch',monospace;font-size:10px;padding:3px 10px;border-radius:999px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:#6366f1">QC System · Ajinomoto</span>
+          <span style="font-family:'Chakra Petch',monospace;font-size:10px;padding:3px 10px;border-radius:999px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#10b981">PD-3 · Internship Project</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// 🔧 CONFIG
+// ══════════════════════════════════════════════════════════════
+const SHEET_ID   = '1aU_JL6uTG_5X7cb0A3FrPsLqWP0jSxnh8kfkBfeW028';
+const SHEET_NAME = 'Feedback';   // ← ชื่อ Sheet ที่เก็บ feedback
+// ══════════════════════════════════════════════════════════════
+
+const GVZ = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}&headers=1`;
+
+// Column map — ต้องตรงกับที่ GAS appendRow เรียงไว้
+// [timestamp, name, role, score, easeOfUse, speed, proTags, prosText, conTags, consText, featureSuggTags, suggestion, recommend, messageToIntern]
+const COL = {ts:0,name:1,role:2,score:3,ease:4,speed:5,proTags:6,prosText:7,conTags:8,consText:9,featTags:10,suggestion:11,recommend:12,msg:13};
+
+const SCORE_COLORS = {5:'#10b981',4:'#06b6d4',3:'#f59e0b',2:'#f97316',1:'#f43f5e'};
+const SCORE_EMOJI  = {5:'🤩',4:'😊',3:'😐',2:'😕',1:'😞'};
+const ROLE_COLORS  = ['#6366f1','#06b6d4','#10b981','#f59e0b'];
+
+let allRows = [];
+
+// ── clock ──
+(function(){
+  function t(){const n=new Date();const s=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');const el=document.getElementById('liveClock');if(el)el.textContent=s;}
+  t();setInterval(t,1000);
+})();
+
+// ── load ──
+async function loadData(){
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spin');
+  try{
+    const res = await fetch(GVZ);
+    const text = await res.text();
+    const json = JSON.parse(text.replace(/^[^(]+\(/,'').replace(/\);?\s*$/,''));
+    const cols = json.table.cols.map(c=>c.label);
+
+    allRows = json.table.rows
+      .map(r=>{
+        const row=[];
+        for(let i=0;i<13;i++){
+          const cell = r.c && r.c[i];
+          row.push(cell && cell.v !== null ? (cell.f || String(cell.v)) : '');
+        }
+        return row;
+      })
+      .filter(r=>r[COL.score]&&!isNaN(parseFloat(r[COL.score])));
+
+    render();
+  }catch(e){
+    // Demo mode: show placeholder UI if sheet not yet set up
+    renderDemo();
+    console.warn('Sheet not found or empty, showing demo.', e);
+  }
+  btn.classList.remove('spin');
+}
+
+function getCell(row,col){return(row[col]||'').toString().trim();}
+function splitTags(str){return str.split(',').map(s=>s.trim()).filter(Boolean);}
+function countMap(arr){const m={};arr.forEach(v=>{if(v)m[v]=(m[v]||0)+1;});return m;}
+function topN(map,n){return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,n);}
+function getMost(map){const e=Object.entries(map);if(!e.length)return'—';return e.sort((a,b)=>b[1]-a[1])[0][0];}
+
+function render(){
+  const rows = allRows;
+  const n = rows.length;
+  if(!n){renderEmpty();return;}
+
+  // ── KPI ──
+  const scores = rows.map(r=>parseFloat(getCell(r,COL.score))).filter(s=>!isNaN(s));
+  const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
+  const avgFixed = avg.toFixed(2);
+
+  const scoreDistMap={1:0,2:0,3:0,4:0,5:0};
+  scores.forEach(s=>{const k=Math.round(s);if(scoreDistMap[k]!==undefined)scoreDistMap[k]++;});
+  const topScoreEntry=Object.entries(scoreDistMap).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('avgScore').textContent=avgFixed;
+  document.getElementById('avgEmoji').textContent=SCORE_EMOJI[Math.round(avg)]||'⭐';
+  document.getElementById('totalCount').textContent=n.toLocaleString();
+  document.getElementById('countTrend').textContent=`${n} รายการทั้งหมด`;
+  document.getElementById('topScore').textContent=`${SCORE_EMOJI[topScoreEntry[0]]} ${topScoreEntry[0]} ดาว`;
+  document.getElementById('topScorePct').textContent=`${Math.round(topScoreEntry[1]/n*100)}% ของผู้ตอบ`;
+
+  // stars display
+  document.getElementById('starRow').innerHTML=renderStars(avg);
+
+  // gauge
+  updateGauge(avg);
+  document.getElementById('gaugeCenter').textContent=avgFixed;
+
+  // ease / speed
+  const easeMap=countMap(rows.map(r=>getCell(r,COL.ease)).filter(Boolean));
+  const speedMap=countMap(rows.map(r=>getCell(r,COL.speed)).filter(Boolean));
+  document.getElementById('easeTop').textContent=getMost(easeMap)||'—';
+  document.getElementById('speedTop').textContent=getMost(speedMap)||'—';
+
+  // ── Score Distribution ──
+  const distEl=document.getElementById('distContainer');
+  distEl.innerHTML='';
+  [5,4,3,2,1].forEach(k=>{
+    const cnt=scoreDistMap[k];
+    const pct=n?Math.round(cnt/n*100):0;
+    const row=document.createElement('div');
+    row.className='bar-dist-row';
+    row.innerHTML=`
+      <div class="bar-dist-lbl">${SCORE_EMOJI[k]}</div>
+      <div class="bar-dist-track">
+        <div class="bar-dist-fill" data-w="${pct}" style="width:0%;background:${SCORE_COLORS[k]}">
+          ${pct>8?`<span class="bar-dist-pct">${pct}%</span>`:''}
+        </div>
+      </div>
+      <div class="bar-dist-n">${cnt}</div>`;
+    distEl.appendChild(row);
+  });
+  setTimeout(()=>distEl.querySelectorAll('.bar-dist-fill').forEach(el=>el.style.width=el.dataset.w+'%'),80);
+
+  // ── Pros Cloud ──
+  const prosMap=countMap(rows.flatMap(r=>splitTags(getCell(r,COL.proTags))));
+  document.getElementById('prosCloud').innerHTML=topN(prosMap,8).length
+    ?topN(prosMap,8).map(([tag,cnt])=>`<div class="tc tc-green">${tag}<span class="tc-n">${cnt}</span></div>`).join('')
+    :'<div class="empty" style="padding:12px">ยังไม่มีข้อมูล</div>';
+
+  // ── Cons Cloud ──
+  const consMap=countMap(rows.flatMap(r=>splitTags(getCell(r,COL.conTags))));
+  document.getElementById('consCloud').innerHTML=topN(consMap,8).length
+    ?topN(consMap,8).map(([tag,cnt])=>`<div class="tc tc-rose">${tag}<span class="tc-n">${cnt}</span></div>`).join('')
+    :'<div class="empty" style="padding:12px">ยังไม่มีข้อมูล</div>';
+
+  // ── Feature wish ──
+  const featMap=countMap(rows.flatMap(r=>splitTags(getCell(r,COL.featTags))));
+  document.getElementById('featCloud').innerHTML=topN(featMap,8).length
+    ?topN(featMap,8).map(([tag,cnt])=>`<div class="tc tc-violet">${tag}<span class="tc-n">${cnt}</span></div>`).join('')
+    :'<div class="empty" style="padding:12px">ยังไม่มีข้อมูล</div>';
+
+  // ── Role list ──
+  const roleMap=countMap(rows.map(r=>getCell(r,COL.role)).filter(Boolean));
+  const roleEntries=Object.entries(roleMap).sort((a,b)=>b[1]-a[1]);
+  const roleEl=document.getElementById('roleList');
+  roleEl.innerHTML=roleEntries.length?roleEntries.map(([role,cnt],i)=>{
+    const pct=Math.round(cnt/n*100);
+    return `<div class="role-row">
+      <div class="role-lbl">${role}</div>
+      <div class="role-track"><div class="role-fill" data-w="${pct}" style="width:0%;background:${ROLE_COLORS[i%ROLE_COLORS.length]}"></div></div>
+      <div class="role-n">${cnt}</div>
+    </div>`;
+  }).join(''):'<div class="empty" style="padding:12px">ยังไม่มีข้อมูล</div>';
+  setTimeout(()=>roleEl.querySelectorAll('.role-fill').forEach(el=>el.style.width=el.dataset.w+'%'),120);
+
+  // ── Table ──
+  const recent=[...rows].reverse().slice(0,20);
+  document.getElementById('tblSub').textContent=`แสดง ${Math.min(20,n)} จาก ${n} รายการ`;
+  document.getElementById('tblBody').innerHTML=recent.map(r=>{
+    const sc=Math.round(parseFloat(getCell(r,COL.score)))||0;
+    return `<tr>
+      <td style="font-size:11px;font-family:'Chakra Petch',monospace">${getCell(r,COL.ts)}</td>
+      <td>${getCell(r,COL.name)||'—'}</td>
+      <td>${getCell(r,COL.role)||'—'}</td>
+      <td><span class="pill pill-${sc}">${SCORE_EMOJI[sc]||''} ${sc}/5</span></td>
+      <td style="font-size:11px">${getCell(r,COL.ease)||'—'}</td>
+      <td style="font-size:11px">${getCell(r,COL.speed)||'—'}</td>
+      <td style="font-size:11px;max-width:160px">${getCell(r,COL.proTags)||'—'}</td>
+      <td style="font-size:11px;max-width:160px">${getCell(r,COL.conTags)||'—'}</td>
+      <td style="font-size:11px">${getCell(r,COL.recommend)||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+  // ── Message Wall ──
+  const msgs = [...rows].reverse().filter(r=>getCell(r,COL.msg));
+  const msgEl = document.getElementById('msgWall');
+  const ROLE_ICON = {'QC / ลูกกะ':'🔍','หัวหน้างาน / S.V.':'👔','Robot / WD':'🤖','ผู้จัดการ / Mgr.':'🏢'};
+  msgEl.innerHTML = msgs.length
+    ? msgs.map(r=>{
+        const sc = Math.round(parseFloat(getCell(r,COL.score)))||0;
+        const role = getCell(r,COL.role);
+        const icon = ROLE_ICON[role]||'👤';
+        const name = getCell(r,COL.name)||'ไม่ระบุชื่อ';
+        return `<div style="background:linear-gradient(135deg,#fdf4ff,#fce7f3);border:1.5px solid #f9a8d4;border-radius:14px;padding:14px 16px;position:relative;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:20px">${icon}</span>
+            <span style="font-size:13px;font-weight:700;color:#831843">${name}</span>
+            <span style="font-family:'Chakra Petch',monospace;font-size:9px;color:#be185d;padding:2px 8px;border-radius:999px;background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.2)">${role||'—'}</span>
+            <span style="margin-left:auto;font-size:14px">${SCORE_EMOJI[sc]||''}</span>
+          </div>
+          <div style="font-size:13.5px;color:#9d174d;line-height:1.7;font-style:italic">"${getCell(r,COL.msg)}"</div>
+          <div style="font-family:'Chakra Petch',monospace;font-size:9px;color:#be185d;margin-top:8px;opacity:.6">${getCell(r,COL.ts)}</div>
+        </div>`;
+      }).join('')
+    : '<div class="empty" style="padding:16px;font-style:italic">ยังไม่มีข้อความถึงนักศึกษาฝึกงาน</div>';
+}
+
+function renderStars(avg){
+  let html='';
+  for(let i=1;i<=5;i++){
+    if(avg>=i) html+=`<span class="star-filled">★</span>`;
+    else if(avg>=i-0.5) html+=`<span style="color:#f59e0b;font-size:20px">☆</span>`;
+    else html+=`<span class="star-empty">★</span>`;
+  }
+  return html;
+}
+
+function updateGauge(avg){
+  // arc from 20,100 to 180,100 (semicircle) — map avg 1-5 to 0-180deg
+  const pct = (avg-1)/4;  // 0 to 1
+  const angle = pct * Math.PI; // 0 to π
+  const cx=100,cy=100,r=80;
+  const x = cx - r*Math.cos(angle);
+  const y = cy - r*Math.sin(angle);
+  const largeArc = angle > Math.PI ? 1 : 0;
+  document.getElementById('gaugeFill').setAttribute('d',
+    `M 20 100 A ${r} ${r} 0 ${largeArc} 1 ${x.toFixed(1)} ${y.toFixed(1)}`);
+  // needle: rotate from pointing left (1) to right (5)
+  const needleAngle = Math.PI - angle; // angle from positive x-axis
+  const nx = cx + 70*Math.cos(needleAngle);
+  const ny = cy - 70*Math.sin(needleAngle);
+  document.getElementById('gaugeNeedle').setAttribute('x2',nx.toFixed(1));
+  document.getElementById('gaugeNeedle').setAttribute('y2',ny.toFixed(1));
+}
+
+function renderEmpty(){
+  const msg='<div class="empty">ยังไม่มีข้อมูล Feedback</div>';
+  ['distContainer','prosCloud','consCloud','featCloud','roleList','msgWall'].forEach(id=>document.getElementById(id).innerHTML=msg);
+  document.getElementById('tblBody').innerHTML='<tr><td colspan="9" class="empty">ยังไม่มีข้อมูล</td></tr>';
+}
+
+// ── Demo mode (when sheet not connected) ──
+function renderDemo(){
+  const demoRows=[
+    ['25/6/2568 09:12','สมชาย','QC / ลูกกะ','5','ง่ายมาก','เร็วมาก','ใช้งานง่าย, แจ้งเตือนรวดเร็ว','ระบบดีมาก','','','Export PDF/Excel','','แนะนำแน่นอน','ขอบคุณที่ทำระบบดีๆ ให้พวกเราครับ ทำงานได้เยี่ยมมากเลย 👏'],
+    ['25/6/2568 10:34','ไม่ระบุชื่อ','หัวหน้างาน / S.V.','4','ง่าย','เร็ว','ข้อมูล Real-Time, Dashboard เข้าใจง่าย','','โหลดช้า','บางครั้งโหลดนาน','กราฟเพิ่มเติม','','แนะนำแน่นอน','ระบบนี้ช่วยงานได้มากครับ โชคดีในอนาคตนะ'],
+    ['25/6/2568 13:45','วิภา','QC / ลูกกะ','5','ง่ายมาก','เร็วมาก','ลดการใช้กระดาษ, ประหยัดเวลา','','','','App มือถือ','','แนะนำแน่นอน',''],
+    ['25/6/2568 14:20','ไม่ระบุชื่อ','Robot / WD','4','ง่าย','ปกติ','ติดตามได้ทุกที่','','กรอกยากบนมือถือ','','Export PDF/Excel, App มือถือ','ควรมี dark mode','น่าจะแนะนำ',''],
+    ['25/6/2568 15:00','ประยูร','QC / ลูกกะ','3','พอใช้ได้','ช้า','ใช้งานง่าย','','Dashboard อ่านยาก','','กราฟเพิ่มเติม','','ไม่แน่ใจ',''],
+    ['26/6/2568 08:30','ไม่ระบุชื่อ','ผู้จัดการ / Mgr.','5','ง่ายมาก','เร็วมาก','ข้อมูล Real-Time, Dashboard เข้าใจง่าย, เพิ่มความแม่นยำ','ระบบช่วยตัดสินใจได้ดี','','','ค้นหาข้อมูลย้อนหลัง','','แนะนำแน่นอน','ทำได้ดีมากครับ ภูมิใจที่ได้เห็นนักศึกษาฝึกงานสร้างสิ่งที่มีประโยชน์จริงๆ 🎉'],
+    ['26/6/2568 09:15','สุดา','หัวหน้างาน / S.V.','4','ง่าย','เร็ว','แจ้งเตือนรวดเร็ว, ประหยัดเวลา','','','','Export PDF/Excel','','แนะนำแน่นอน',''],
+    ['26/6/2568 11:00','ไม่ระบุชื่อ','QC / ลูกกะ','4','ง่าย','เร็วมาก','ลดการใช้กระดาษ, ใช้งานง่าย','','โหลดช้า','','App มือถือ','','น่าจะแนะนำ',''],
+  ];
+  allRows=demoRows;
+  render();
+
+  // show demo banner
+  const banner=document.createElement('div');
+  banner.style.cssText='background:rgba(245,158,11,0.12);border:1.5px solid rgba(245,158,11,0.3);border-radius:12px;padding:10px 16px;font-size:12px;color:#92400e;margin-bottom:16px;display:flex;align-items:center;gap:8px;position:relative;z-index:10;';
+  banner.innerHTML='⚠️ <strong>Demo Mode</strong> — กำลังแสดงข้อมูลตัวอย่าง ยังไม่ได้เชื่อมต่อ Google Sheet จริง';
+  document.querySelector('.main').insertBefore(banner,document.querySelector('.score-hero'));
+}
+
+loadData();
+</script>
+</body>
+</html>
