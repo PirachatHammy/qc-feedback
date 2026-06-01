@@ -435,7 +435,7 @@ async function loadData(){
     allRows = json.table.rows
       .map(r=>{
         const row=[];
-        for(let i=0;i<13;i++){
+        for(let i=0;i<14;i++){
           const cell = r.c && r.c[i];
           row.push(cell && cell.v !== null ? (cell.f || String(cell.v)) : '');
         }
